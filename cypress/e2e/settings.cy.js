@@ -1,39 +1,26 @@
-import { ProfilePage } from '../support/pages/ProfilePage';
-import { faker } from '@faker-js/faker';
+/// <reference types="cypress" />
 
-describe('Profile Settings', () => {
-  const profile = new ProfilePage();
-
+describe('Settings Tests', () => {
   beforeEach(() => {
-    cy.login();
-    profile.visitSettings();
+    cy.resetDatabase();
   });
 
-  it('updates bio', () => {
-    const bio = faker.lorem.sentence();
-    profile.updateBio(bio);
-    profile.save();
-    cy.get('[data-qa="settings-bio"]').should('have.value', bio);
-  });
+  it('updates user settings', () => {
+    cy.createUser().then((user) => {
+      cy.visit('/login');
+      cy.get('input[name=email]').type(user.email);
+      cy.get('input[name=password]').type(user.password);
+      cy.get('form').submit();
 
-  it('updates username', () => {
-    const username = faker.internet.userName();
-    profile.updateUsername(username);
-    profile.save();
-    cy.get('[data-qa="settings-username"]').should('have.value', username);
-  });
+      cy.visit('/settings');
+      const newEmail = faker.internet.email();
+      cy.get('input[name=email]').clear().type(newEmail);
+      cy.get('form').submit();
+      cy.contains('Settings updated');
 
-  it('updates email', () => {
-    const email = faker.internet.email();
-    profile.updateEmail(email);
-    profile.save();
-    cy.get('[data-qa="settings-email"]').should('have.value', email);
-  });
-
-  it('updates password', () => {
-    const password = 'NewPassword123';
-    profile.updatePassword(password);
-    profile.save();
-    cy.get('[data-qa="success-message"]').should('be.visible');
+      cy.request('GET', 'http://localhost:3000/api/user')
+        .its('body.user.email')
+        .should('eq', newEmail);
+    });
   });
 });

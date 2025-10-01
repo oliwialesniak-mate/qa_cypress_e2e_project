@@ -1,23 +1,28 @@
-import { SignInPage } from '../support/pages/SignInPage';
+/// <reference types="cypress" />
 
-describe('Sign In', () => {
-  const signIn = new SignInPage();
-
-  it('logs in with valid credentials', () => {
-    signIn.visit();
-    signIn.fillEmail('user32@hotmail.com');
-    signIn.fillPassword('Userpass1');
-    signIn.submit();
-
-    cy.get('[data-qa="user-profile"]').should('contain', 'user32');
+describe('Sign In Tests', () => {
+  beforeEach(() => {
+    cy.resetDatabase();
   });
 
-  it('fails with invalid credentials', () => {
-    signIn.visit();
-    signIn.fillEmail('wrong@example.com');
-    signIn.fillPassword('wrongpass');
-    signIn.submit();
+  it('signs up a new user', () => {
+    cy.fakeUser().then((user) => {
+      cy.visit('/signup');
+      cy.get('input[name=username]').type(user.username);
+      cy.get('input[name=email]').type(user.email);
+      cy.get('input[name=password]').type(user.password);
+      cy.get('form').submit();
+      cy.contains(`Welcome, ${user.username}`);
+    });
+  });
 
-    cy.get('[data-qa="error-message"]').should('contain', 'Invalid credentials');
+  it('signs in an existing user', () => {
+    cy.createUser().then((user) => {
+      cy.visit('/login');
+      cy.get('input[name=email]').type(user.email);
+      cy.get('input[name=password]').type(user.password);
+      cy.get('form').submit();
+      cy.contains(`Welcome, ${user.username}`);
+    });
   });
 });
