@@ -1,24 +1,37 @@
-/// <reference types='cypress' />
-/// <reference types='../support' />
+import { ArticlePage } from '../support/pages/ArticlePage';
+import { faker } from '@faker-js/faker';
 
-describe('Article', () => {
-  before(() => {
-
-  });
+describe('Articles', () => {
+  const article = new ArticlePage();
 
   beforeEach(() => {
-    cy.task('db:clear');
+    cy.login();
   });
 
-  it('should be created using New Article form', () => {
+  it('creates a new article', () => {
+    const title = faker.lorem.words(3);
+    const description = faker.lorem.sentence();
 
+    article.visitEditor();
+    article.fillTitle(title);
+    article.fillDescription(description);
+    article.submit();
+
+    cy.get('[data-qa="article-title-display"]').should('contain', title);
   });
 
-  it('should be edited using Edit button', () => {
+  it('edits an article', () => {
+    const newTitle = faker.lorem.words(4);
 
+    article.edit();
+    article.fillTitle(newTitle);
+    article.submit();
+
+    cy.get('[data-qa="article-title-display"]').should('contain', newTitle);
   });
 
-  it('should be deleted using Delete button', () => {
-
+  it('deletes an article', () => {
+    article.delete();
+    cy.get('[data-qa="article-list"]').should('not.contain', 'Deleted');
   });
 });
