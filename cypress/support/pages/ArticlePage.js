@@ -1,27 +1,12 @@
-import { PageObject } from './PageObject';
-
-export class ArticlePage extends PageObject {
-  visitEditor() {
-    super.visit('/editor');
+class ArticlePage {
+  static addComment(comment) {
+    cy.get('[data-qa=comment-input]').clear().type(comment);
+    cy.get('[data-qa=comment-submit]').click();
   }
 
-  fillTitle(title) {
-    this.getByQa('article-title').clear().type(title);
-  }
-
-  fillDescription(description) {
-    this.getByQa('article-description').clear().type(description);
-  }
-
-  submit() {
-    this.getByQa('article-submit').click();
-  }
-
-  edit() {
-    this.getByQa('article-edit').click();
-  }
-
-  delete() {
-    this.getByQa('article-delete').click();
+  static deleteButton() {
+    return cy.get('[data-qa=delete-article]');
   }
 }
+
+export default ArticlePage;

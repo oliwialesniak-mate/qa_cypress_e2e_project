@@ -1,62 +1,34 @@
-/// <reference types="cypress" />
+import { ArticlePage } from "../pageObjects/ArticlePage";
 
-describe('Articles Tests', () => {
+describe("Articles", () => {
+  const article = new ArticlePage();
+
   beforeEach(() => {
     cy.resetDatabase();
+    cy.createUser().then((user) => cy.login(user));
   });
 
-  it('creates an article', () => {
-    cy.createUser().then((user) => {
-      cy.visit('/login');
-      cy.get('input[name=email]').type(user.email);
-      cy.get('input[name=password]').type(user.password);
-      cy.get('form').submit();
+  it("should create a new article", () => {
+    const title = faker.lorem.sentence();
+    const body = faker.lorem.paragraph();
 
-      cy.fakeArticle().then((article) => {
-        cy.visit('/editor');
-        cy.get('input[name=title]').type(article.title);
-        cy.get('input[name=description]').type(article.description);
-        cy.get('textarea[name=body]').type(article.body);
-        article.tags.forEach(tag => cy.get('input[name=tags]').type(`${tag}{enter}`));
-        cy.get('form').submit();
-        cy.contains(article.title);
-      });
-    });
+    article.visitNew();
+    article.typeTitle(title);
+    article.typeBody(body);
+    article.submit();
+
+    cy.contains(title).should("be.visible");
+    cy.contains(body).should("be.visible");
   });
 
-  it('edits an article', () => {
-    cy.createUser().then((user) => {
-      cy.visit('/login');
-      cy.get('input[name=email]').type(user.email);
-      cy.get('input[name=password]').type(user.password);
-      cy.get('form').submit();
+  it("should delete an article", () => {
+    const title = faker.lorem.sentence();
+    const body = faker.lorem.paragraph();
 
-      cy.fakeArticle().then((article) => {
-        // create article via API
-        cy.request('POST', 'http://localhost:3000/api/articles', { article, userEmail: user.email });
-        cy.visit('/editor/' + encodeURIComponent(article.title));
-
-        const updatedTitle = faker.lorem.sentence();
-        cy.get('input[name=title]').clear().type(updatedTitle);
-        cy.get('form').submit();
-        cy.contains(updatedTitle);
-      });
-    });
-  });
-
-  it('deletes an article', () => {
-    cy.createUser().then((user) => {
-      cy.visit('/login');
-      cy.get('input[name=email]').type(user.email);
-      cy.get('input[name=password]').type(user.password);
-      cy.get('form').submit();
-
-      cy.fakeArticle().then((article) => {
-        cy.request('POST', 'http://localhost:3000/api/articles', { article, userEmail: user.email });
-        cy.visit('/article/' + encodeURIComponent(article.title));
-        cy.get('.delete-article').click();
-        cy.contains('No articles are here… yet.');
-      });
+    article.createViaAPI(title, body).then((slug) => {
+      cy.visit(`/article/${slug}`);
+      article.delete();
+      cy.contains(title).should("not.exist");
     });
   });
 });

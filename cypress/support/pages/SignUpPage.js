@@ -1,23 +1,28 @@
-import { PageObject } from './PageObject';
-
-export class SignUpPage extends PageObject {
+class SignUpPage {
   visit() {
-    super.visit('/register');
+    cy.visit('/register');
+    return this;
   }
 
   fillUsername(username) {
-    this.getByQa('sign-up-username').type(username);
+    cy.get('[data-qa=signup-username]').clear().type(username);
+    return this;
   }
 
   fillEmail(email) {
-    this.getByQa('sign-up-email').type(email);
+    cy.get('[data-qa=signup-email]').clear().type(email);
+    return this;
   }
 
   fillPassword(password) {
-    this.getByQa('sign-up-password').type(password);
+    cy.get('[data-qa=signup-password]').clear().type(password);
+    return this;
   }
 
   submit() {
-    this.getByQa('sign-up-submit').click();
+    cy.get('[data-qa=signup-submit]').click();
+    return this;
   }
 }
+
+export default new SignUpPage();

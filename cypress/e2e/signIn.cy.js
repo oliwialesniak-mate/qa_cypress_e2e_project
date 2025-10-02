@@ -1,28 +1,26 @@
-/// <reference types="cypress" />
+import { SignInPage } from "../pageObjects/SignInPage";
 
-describe('Sign In Tests', () => {
-  beforeEach(() => {
-    cy.resetDatabase();
-  });
+describe("Sign In", () => {
+  const signIn = new SignInPage();
 
-  it('signs up a new user', () => {
-    cy.fakeUser().then((user) => {
-      cy.visit('/signup');
-      cy.get('input[name=username]').type(user.username);
-      cy.get('input[name=email]').type(user.email);
-      cy.get('input[name=password]').type(user.password);
-      cy.get('form').submit();
-      cy.contains(`Welcome, ${user.username}`);
-    });
-  });
+  beforeEach(() => cy.resetDatabase());
 
-  it('signs in an existing user', () => {
+  it("should login with valid credentials", () => {
     cy.createUser().then((user) => {
-      cy.visit('/login');
-      cy.get('input[name=email]').type(user.email);
-      cy.get('input[name=password]').type(user.password);
-      cy.get('form').submit();
-      cy.contains(`Welcome, ${user.username}`);
+      signIn.visit();
+      signIn.typeEmail(user.email);
+      signIn.typePassword(user.password);
+      signIn.submit();
+      cy.contains(user.username).should("be.visible");
     });
+  });
+
+  it("should not login with invalid credentials", () => {
+    signIn.visit();
+    signIn.typeEmail("wrong@example.com");
+    signIn.typePassword("badpassword");
+    signIn.submit();
+    cy.contains("email or password is invalid").should("be.visible");
   });
 });
+

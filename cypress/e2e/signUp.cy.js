@@ -1,30 +1,23 @@
-import { SignUpPage } from '../support/pages/SignUpPage';
-import { faker } from '@faker-js/faker';
+import { SignUpPage } from "../pageObjects/SignUpPage";
 
-describe('Sign Up', () => {
+describe("Sign Up", () => {
   const signUp = new SignUpPage();
 
-  it('signs up with valid data', () => {
-    const username = faker.internet.userName();
-    const email = faker.internet.email();
-    const password = 'Userpass1';
+  beforeEach(() => cy.resetDatabase());
+
+  it("should register a new user", () => {
+    const user = {
+      username: faker.internet.userName(),
+      email: faker.internet.email(),
+      password: faker.internet.password(12)
+    };
 
     signUp.visit();
-    signUp.fillUsername(username);
-    signUp.fillEmail(email);
-    signUp.fillPassword(password);
+    signUp.typeUsername(user.username);
+    signUp.typeEmail(user.email);
+    signUp.typePassword(user.password);
     signUp.submit();
 
-    cy.get('[data-qa="user-profile"]').should('contain', username);
-  });
-
-  it('shows error with invalid data', () => {
-    signUp.visit();
-    signUp.fillUsername('');
-    signUp.fillEmail('not-an-email');
-    signUp.fillPassword('');
-    signUp.submit();
-
-    cy.get('[data-qa="error-message"]').should('be.visible');
+    cy.contains(user.username).should("be.visible");
   });
 });

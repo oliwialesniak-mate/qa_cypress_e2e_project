@@ -1,21 +1,23 @@
-import { FollowPage } from '../support/pages/FollowPage';
+import { ProfilePage } from "../pageObjects/ProfilePage";
 
-describe('Follow/Unfollow', () => {
-  const follow = new FollowPage();
+describe("Follow/Unfollow", () => {
+  const profile = new ProfilePage();
+
+  let user1, user2;
 
   beforeEach(() => {
-    cy.login();
+    cy.resetDatabase();
+    cy.createUser().then((u1) => { user1 = u1; });
+    cy.createUser().then((u2) => { user2 = u2; });
   });
 
-  it('follows a user', () => {
-    follow.visitProfile('user33');
-    follow.follow();
-    cy.get('[data-qa="unfollow-button"]').should('be.visible');
-  });
-
-  it('unfollows a user', () => {
-    follow.visitProfile('user33');
-    follow.unfollow();
-    cy.get('[data-qa="follow-button"]').should('be.visible');
+  it("should follow and unfollow another user", () => {
+    cy.login(user1);
+    profile.visit(user2.username);
+    profile.toggleFollow();
+    cy.contains("Unfollow").should("be.visible");
+    profile.toggleFollow();
+    cy.contains("Follow").should("be.visible");
   });
 });
+
